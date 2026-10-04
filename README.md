@@ -1,55 +1,91 @@
-# 🚀 天翼校园网全自动无感登录 2.0 (终极版) 使用说明
+<h1 align="center">天翼校园网自动登录</h1>
 
-这套工具包含两部分：一个在后台默默识别验证码的核心服务 (exe)，和一个在浏览器里自动填表单的油猴脚本 (txt)。只需配置一次，以后开机自动秒连校园网！
+<p align="center">浏览器自动填表，本机 OCR 识别验证码。</p>
 
-> 📌 **适用范围特别说明**
-> 
-> 本项目目前的具体环境、网页元素定位以及跳转逻辑，是专门针对 **ZSC** 的天翼校园网环境编写和测试的。直接照搬可能无法在其他学校的网络下运行。
-> 
->如果你是其他学校的同学，完全可以借鉴本项目中 **“开机静默唤醒 + 离线 OCR 识别 + 强制跳转网关”** 的核心思路。只需稍微修改脚本中的登录网址和表单 ID，就能轻松实现你们学校的自动登录！欢迎 Fork 和魔改。
+<p align="center">
+  <a href="https://github.com/xiaoxiaoxiaoHuanGe/Tianyi-Campus-Auto-Login/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/xiaoxiaoxiaoHuanGe/Tianyi-Campus-Auto-Login?style=flat-square"></a>
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-526273?style=flat-square">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/License-MIT-526273?style=flat-square"></a>
+</p>
 
----
-
-## 🛠️ 快速配置三步走
-
-### 第一步：给 EXE 安个“永久的家”
-把 `天翼在线登录.exe` 放到一个你**以后绝对不会再去移动或删除**的文件夹里（比如 `D:\软件\校园网自动登录\`）。
-> ⚠️ **切记：放好之后再双击运行！**
-
-### 第二步：双击运行服务核心
-双击 `天翼在线登录.exe`。
-> ⚠️ **注意：没有任何黑框或弹窗出现是正常的！** 程序是完全静默的，它此时已经悄悄写入了开机自启项，并在后台随时待命。
-
-### 第三步：导入浏览器脚本
-1. 浏览器安装 **Tampermonkey（油猴）** 扩展插件。
-2. 在油猴里新建一个脚本，把 `油猴脚本.txt` 里的所有代码复制粘贴进去。
-3. **最重要的一步：** 找到代码第 33 行和 34 行，把里面的 `账号` 和 `密码` 换成你自己的**真实校园网账号和密码**。
-4. 按 `Ctrl + S` 保存脚本。
-
-**🎉 配置完成！现在你可以打开浏览器测试一下了。**
+<p align="center">
+  <a href="#快速开始">快速开始</a> ·
+  <a href="tianyi-autologin.user.js">浏览器脚本</a> ·
+  <a href="#停止与卸载">停止与卸载</a> ·
+  <a href="https://github.com/xiaoxiaoxiaoHuanGe/Tianyi-Campus-Auto-Login/issues">反馈问题</a>
+</p>
 
 ---
 
-## 💡 核心注意事项（必看）
+这套工具由 **Windows 本地 OCR 服务 + Tampermonkey 用户脚本**组成，用于减少校园网网页登录时的重复操作。
+浏览器负责跳转、填写账号和提交；本机服务接收验证码图片并返回识别结果。
 
-* **🚫 严禁移动或重命名 EXE 文件：** 程序第一次运行时，会把当前的“绝对路径”记录到系统的开机启动表里。如果你之后把它移到了别的文件夹，或者改了名字，下次开机系统就找不到它了，自动登录就会失效。
+> [!IMPORTANT]
+> 当前脚本针对 **ZSC 的天翼校园网**页面编写。其他学校需核对登录网址、`@match`、表单 ID 和跳转逻辑，不能直接保证可用。
 
-* **📉 关于后台占用：** 这个程序非常轻量，它只有在网页出现验证码的那“零点几秒”才会工作。平时挂在后台 CPU 占用为 0%，内存占用仅 100MB 左右（相当于多开了一个网页），完全不会影响你打游戏或做其他事。
+## 可以做什么
 
-* **🌐 开机有网怎么办？**
-  如果你开机时连着手机热点（有网），程序不会强行弹窗打扰你，但它依然会在后台默默待命。当你拿着电脑去教室连上校园网时，它依然能瞬间帮你完成自动登录。
+| 功能 | 实际行为 |
+| --- | --- |
+| 🖥️ 本地识别 | 使用 ddddocr，在 `127.0.0.1:8899/ocr` 识别验证码图片 |
+| 🌐 启动检测 | 服务启动时 ping 一次 `8.8.8.8`；失败则打开 HTTP 页面，尝试触发校园网跳转 |
+| 🧩 自动填表 | 在匹配页面跳过过渡页，填写账号、密码和识别结果，再提交登录 |
+| 🔄 开机启动 | 打包 EXE 运行时写入当前用户的 Windows 启动项；源码运行不写入 |
 
-* **🛑 如何彻底关闭或卸载？**
-  * **临时关闭：** 按 `Ctrl + Shift + Esc` 打开任务管理器，找到 `天翼在线登录.exe`，右键点击“结束任务”。
-  * **彻底卸载：** 结束任务后，直接把这个 exe 文件删除即可。同时去浏览器油猴插件里把对应的脚本删掉。
+**服务不会持续检测网络，也没有定时重连。** 切换到校园网后如未出现登录页，需要手动打开网页触发认证。
+OCR 识别和登录结果受验证码、页面结构及网络影响；未提供固定的 CPU 或内存占用保证。
 
----
+## 快速开始
 
-## 💭 为什么做这个项目 (碎碎念)
+### 1. 启动本地服务
 
-苦“天翼校园拨号客户端”久矣！每次开机都得等那个程序慢慢吞吞地弹出来，手动点击登录不说，登录完还得一直挂在后台占资源.
+从 [Releases](https://github.com/xiaoxiaoxiaoHuanGe/Tianyi-Campus-Auto-Login/releases/latest) 下载 `CampusNet-OCR-Server.exe`，
+放在固定目录后运行。移位或改名后，应从新位置重新运行以更新启动项。
 
-既然有隐藏版网页版在线拨号，何不利用 **网页脚本 + 本地离线 OCR 识别** 把整个过程全自动化？配置一次，以后开机即自动上网，彻底告别手动点击,如果这个IP还没下线,那什么也不会发生,正常上网冲浪即可😎
+源码入口是 [天翼在线登录.py](天翼在线登录.py)。不使用 EXE 时，在 Windows 的 Python 环境运行：
 
-🎁 **留个彩蛋：**
-朋友们知道为什么要去ping `8.8.8.8` 来触发跳转而不是直接网页拼接IP跳转吗？hhhhhhh 欢迎在 Issues 里留言交流！
+```powershell
+git clone https://github.com/xiaoxiaoxiaoHuanGe/Tianyi-Campus-Auto-Login.git
+cd Tianyi-Campus-Auto-Login
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install ddddocr flask flask-cors
+python .\天翼在线登录.py
+```
+
+仓库没有锁定 Python 和依赖版本；以上为源码依赖安装方式。首次安装需要网络，服务启动后识别在本机进行。
+
+### 2. 安装浏览器脚本
+
+1. 在浏览器安装 Tampermonkey 扩展。
+2. 新建用户脚本，复制 [tianyi-autologin.user.js](tianyi-autologin.user.js) 的内容。
+3. 搜索 `MY_USERNAME` 和 `MY_PASSWORD`，在本机填入自己的校园网账号和密码。
+4. 保存脚本，确认扩展有权在对应登录页运行。
+
+### 3. 验证登录
+
+保持 OCR 服务运行，在校园网中打开网页进入认证页面。
+脚本应填写账号、识别验证码并提交；如果提示无法连接 OCR，先检查本机服务和 `8899` 端口。
+验证码错误时需重新加载页面再试，当前脚本没有自动重试循环。
+
+## 凭据与使用范围
+
+- 账号和密码以明文保存在本机用户脚本中。公开仓库中的数字仅作示例，不可直接用于登录。
+- 不要提交填写后的脚本，也不要在截图、日志或导出的浏览器配置中公开凭据。
+- OCR 接口仅供本机使用；当前 Flask 服务没有鉴权并允许跨域请求，不应将 `8899` 端口转发到公网。
+- 请使用自己的账号，并遵守学校及网络服务的使用规则。
+
+## 停止与卸载
+
+临时停止：在任务管理器结束 `CampusNet-OCR-Server.exe`；源码运行时在终端按 `Ctrl+C`。
+
+完全卸载：停止进程，禁用或删除 Tampermonkey 脚本，删除 EXE，并移除启动项：
+
+```powershell
+Remove-ItemProperty -LiteralPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'CampusNetAutoLogin' -ErrorAction SilentlyContinue
+```
+
+## 作者与许可证
+
+项目由 [xiaoxiaoxiaoHuanGe](https://github.com/xiaoxiaoxiaoHuanGe) 维护，浏览器脚本保留原署名 **Gemini-Huan**。
+源码采用 [MIT License](LICENSE)，第三方依赖遵循各自许可证。
